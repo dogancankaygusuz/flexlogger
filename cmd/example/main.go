@@ -1,26 +1,47 @@
 package main
 
 import (
-	"os"
+	"fmt"
 
 	"github.com/dogancankaygusuz/flexlogger/pkg/logger"
 )
 
 func main() {
-	consoleLogger := logger.New(logger.DebugLevel, os.Stdout, &logger.TextFormatter{UseColors: true})
+	prodConfig := logger.Config{
+		Level:    "INFO",
+		Output:   logger.OutputFile,
+		Format:   logger.FormatJSON,
+		FilePath: "app.log",
+	}
 
-	consoleLogger.Info("Uygulama başlatıldı", nil)
-	consoleLogger.Debug("Bu bir debug mesajıdır, detay içerir", map[string]interface{}{
-		"version": "1.0.0",
-		"env":     "dev",
+	prodLogger, err := logger.NewFromConfig(prodConfig)
+	if err != nil {
+		fmt.Println("Logger oluşturulamadı:", err)
+		return
+	}
+
+	prodLogger.Info("Uygulama production modunda başladı", map[string]interface{}{
+		"env": "production",
 	})
 
-	jsonLogger := logger.New(logger.InfoLevel, os.Stdout, &logger.JSONFormatter{})
-
-	jsonLogger.Info("JSON formatında log", map[string]interface{}{
-		"status": 200,
-		"module": "api",
+	prodLogger.Error("Veritabanı bağlantısı koptu", map[string]interface{}{
+		"db_host": "192.168.1.50",
+		"retry":   3,
 	})
 
-	jsonLogger.Debug("Bunu göremeyeceksin", nil)
+	fmt.Println("✅ Production logları 'app.log' dosyasına yazıldı.")
+
+	devConfig := logger.Config{
+		Level:     "DEBUG",
+		Output:    logger.OutputConsole,
+		Format:    logger.FormatText,
+		UseColors: true,
+	}
+
+	devLogger, _ := logger.NewFromConfig(devConfig)
+
+	devLogger.Debug("Bu bir debug mesajıdır", nil)
+	devLogger.Warn("Disk alanı azalıyor", map[string]interface{}{
+		"disk_usage": "85%",
+	})
 }
