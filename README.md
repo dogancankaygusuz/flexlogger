@@ -24,7 +24,7 @@ Standart `log` paketinin ötesine geçerek, **Asenkron Yazma (Async)**, **Dosya 
 
 ```bash
 go get github.com/dogancankaygusuz/flexlogger
-
+```
 
 ## 🚀 Kullanım
 
@@ -56,7 +56,7 @@ func main() {
 	log.Info(context.Background(), "Uygulama başlatıldı", nil)
 	log.Debug(context.Background(), "Bu bir debug mesajıdır", nil)
 }
-
+```
 2. İleri Seviye Kullanım (Production)
 JSON formatı, dosya yazdırma, log rotation ve context takibi:
 code
