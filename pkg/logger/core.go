@@ -1,25 +1,25 @@
 package logger
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
-	"path/filepath" // YENİ
-	"runtime"       // YENİ
+	"path/filepath"
+	"runtime"
 	"sync"
 	"time"
 )
-
-// FlexLogger struct'ı ve New fonksiyonu AYNI KALIYOR...
-// (Sadece log fonksiyonunu değiştireceğiz)
 
 type FlexLogger struct {
 	threshold Level
 	output    io.Writer
 	formatter Formatter
-	mu        sync.Mutex
+	logChan   chan *LogEntry
+	wg        sync.WaitGroup
 }
 
+// Constructor
 func New(threshold Level, output io.Writer, formatter Formatter) *FlexLogger {
 	if output == nil {
 		output = os.Stdout
@@ -28,55 +28,85 @@ func New(threshold Level, output io.Writer, formatter Formatter) *FlexLogger {
 		formatter = &TextFormatter{UseColors: true}
 	}
 
-	return &FlexLogger{
+	l := &FlexLogger{
 		threshold: threshold,
 		output:    output,
 		formatter: formatter,
+		logChan:   make(chan *LogEntry, 1000), // 1000 log kapasiteli buffer
+	}
+
+	l.wg.Add(1)
+	go l.startWorker()
+
+	return l
+}
+
+func (l *FlexLogger) startWorker() {
+	defer l.wg.Done()
+
+	for entry := range l.logChan {
+		serialized, err := l.formatter.Format(entry)
+		if err == nil {
+			_, _ = l.output.Write(serialized)
+		}
 	}
 }
 
-// GÜNCELLENEN LOG FONKSİYONU
-func (l *FlexLogger) log(level Level, msg string, fields map[string]interface{}) {
+func (l *FlexLogger) Close() {
+	close(l.logChan)
+	l.wg.Wait()
+}
+
+func (l *FlexLogger) log(ctx context.Context, level Level, msg string, fields map[string]interface{}) {
 	if level < l.threshold {
 		return
 	}
 
-	l.mu.Lock()
-	defer l.mu.Unlock()
+	if ctx != nil {
+		if traceID, ok := ctx.Value("request_id").(string); ok {
+			if fields == nil {
+				fields = make(map[string]interface{})
+			}
+			fields["request_id"] = traceID
+		}
+	}
 
-	// YENİ: Caller (Çağıran) bilgisini al
-	// skip=2 demek: runtime.Caller -> l.log -> l.Info -> KULLANICI KODU
-	// Stack'te 2 adım yukarı çıkıyoruz.
 	_, file, line, ok := runtime.Caller(2)
 	caller := "unknown:0"
 	if ok {
-		// Full path yerine sadece dosya adını alalım (örn: /usr/go/src/main.go -> main.go)
 		caller = fmt.Sprintf("%s:%d", filepath.Base(file), line)
 	}
 
 	entry := &LogEntry{
 		Level:   level,
 		Time:    time.Now(),
-		Caller:  caller, // YENİ: Entry'e ekle
+		Caller:  caller,
 		Message: msg,
 		Fields:  fields,
 	}
 
-	serialized, err := l.formatter.Format(entry)
-	if err != nil {
-		fmt.Printf("LOG FORMAT ERROR: %v\n", err)
-		return
+	select {
+	case l.logChan <- entry:
+	default:
+		fmt.Printf("LOG DROP: Channel full. Message: %s\n", msg)
 	}
-
-	_, _ = l.output.Write(serialized)
 }
 
-// Interface methodları (Debug, Info vs.) AYNI KALIYOR...
-func (l *FlexLogger) Debug(msg string, fields map[string]interface{}) { l.log(DebugLevel, msg, fields) }
-func (l *FlexLogger) Info(msg string, fields map[string]interface{})  { l.log(InfoLevel, msg, fields) }
-func (l *FlexLogger) Warn(msg string, fields map[string]interface{})  { l.log(WarnLevel, msg, fields) }
-func (l *FlexLogger) Error(msg string, fields map[string]interface{}) { l.log(ErrorLevel, msg, fields) }
-func (l *FlexLogger) Fatal(msg string, fields map[string]interface{}) {
-	l.log(FatalLevel, msg, fields)
+// Interface metotları
+func (l *FlexLogger) Debug(ctx context.Context, msg string, fields map[string]interface{}) {
+	l.log(ctx, DebugLevel, msg, fields)
+}
+func (l *FlexLogger) Info(ctx context.Context, msg string, fields map[string]interface{}) {
+	l.log(ctx, InfoLevel, msg, fields)
+}
+func (l *FlexLogger) Warn(ctx context.Context, msg string, fields map[string]interface{}) {
+	l.log(ctx, WarnLevel, msg, fields)
+}
+func (l *FlexLogger) Error(ctx context.Context, msg string, fields map[string]interface{}) {
+	l.log(ctx, ErrorLevel, msg, fields)
+}
+func (l *FlexLogger) Fatal(ctx context.Context, msg string, fields map[string]interface{}) {
+	l.log(ctx, FatalLevel, msg, fields)
+	l.Close()
 	os.Exit(1)
 }

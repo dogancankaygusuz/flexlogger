@@ -1,11 +1,11 @@
 package logger
 
-// Logger interface'i, uygulamamızın kullanacağı metodları belirler.
-// Dependency Injection yaparken bu interface'i kullanacağız.
+import "context"
+
 type Logger interface {
-	Debug(msg string, fields map[string]interface{})
-	Info(msg string, fields map[string]interface{})
-	Warn(msg string, fields map[string]interface{})
-	Error(msg string, fields map[string]interface{})
-	Fatal(msg string, fields map[string]interface{})
+	Debug(ctx context.Context, msg string, fields map[string]interface{})
+	Info(ctx context.Context, msg string, fields map[string]interface{})
+	Warn(ctx context.Context, msg string, fields map[string]interface{})
+	Error(ctx context.Context, msg string, fields map[string]interface{})
+	Fatal(ctx context.Context, msg string, fields map[string]interface{})
 }

@@ -1,17 +1,15 @@
 package logger
 
 import (
-	"errors"
+	"io"
 	"os"
 )
 
-type OutputType string
+// ==========================================
+// EKSİK OLAN KISIMLAR EKLENDİ (BURASI)
+// ==========================================
 
-const (
-	OutputConsole OutputType = "CONSOLE"
-	OutputFile    OutputType = "FILE"
-)
-
+// FormatType, logun formatını belirler.
 type FormatType string
 
 const (
@@ -19,14 +17,19 @@ const (
 	FormatText FormatType = "TEXT"
 )
 
+// ==========================================
+
+// Config yapısı
 type Config struct {
-	Level     string
-	Output    OutputType
-	Format    FormatType
-	FilePath  string
-	UseColors bool
+	Level      string
+	Format     FormatType // Yukarıda tanımladığımız tipi kullanıyoruz
+	FilePath   string
+	UseConsole bool // Konsola yazsın mı?
+	UseFile    bool // Dosyaya yazsın mı?
+	UseColors  bool // Renkli çıktı olsun mu?
 }
 
+// NewFromConfig Factory Method
 func NewFromConfig(cfg Config) (*FlexLogger, error) {
 	level := ParseLevel(cfg.Level)
 
@@ -40,23 +43,30 @@ func NewFromConfig(cfg Config) (*FlexLogger, error) {
 		formatter = &TextFormatter{UseColors: cfg.UseColors}
 	}
 
-	var writer *os.File
-	switch cfg.Output {
-	case OutputFile:
-		if cfg.FilePath == "" {
-			return nil, errors.New("output is FILE but FilePath is empty")
-		}
+	// Writers listesi oluştur
+	var writers []io.Writer
 
-		file, err := os.OpenFile(cfg.FilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			return nil, err
-		}
-		writer = file
-	case OutputConsole:
-		fallthrough
-	default:
-		writer = os.Stdout
+	// 1. Konsol isteniyorsa ekle
+	if cfg.UseConsole {
+		writers = append(writers, os.Stdout)
 	}
 
-	return New(level, writer, formatter), nil
+	// 2. Dosya isteniyorsa ekle
+	if cfg.UseFile && cfg.FilePath != "" {
+		// Log Rotation özelliğini kullanıyoruz (rotator.go dosyasındaki struct)
+		rotator := &SizeRotator{
+			Filename: cfg.FilePath,
+			MaxBytes: 10 * 1024 * 1024, // 10 MB
+		}
+		writers = append(writers, rotator)
+	}
+
+	// MultiWriter ile birleştir
+	// Eğer hiç writer yoksa (writers boşsa) io.Discard (hiçbir yere yazma) kullanılır.
+	finalOutput := io.Discard
+	if len(writers) > 0 {
+		finalOutput = io.MultiWriter(writers...)
+	}
+
+	return New(level, finalOutput, formatter), nil
 }
