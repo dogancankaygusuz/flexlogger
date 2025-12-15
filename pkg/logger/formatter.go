@@ -7,9 +7,11 @@ import (
 	"time"
 )
 
+// LogEntry, bir log satırındaki tüm veriyi temsil eder.
 type LogEntry struct {
 	Level   Level                  `json:"level"`
 	Time    time.Time              `json:"time"`
+	Caller  string                 `json:"caller"` // YENİ: Dosya ve satır bilgisi (main.go:15)
 	Message string                 `json:"message"`
 	Fields  map[string]interface{} `json:"fields,omitempty"`
 }
@@ -18,13 +20,15 @@ type Formatter interface {
 	Format(entry *LogEntry) ([]byte, error)
 }
 
+// === JSON Formatter ===
+
 type JSONFormatter struct{}
 
 func (f *JSONFormatter) Format(entry *LogEntry) ([]byte, error) {
-
 	data := make(map[string]interface{})
 	data["level"] = entry.Level.String()
 	data["time"] = entry.Time.Format(time.RFC3339)
+	data["caller"] = entry.Caller // YENİ: JSON çıktısına ekle
 	data["message"] = entry.Message
 
 	for k, v := range entry.Fields {
@@ -33,6 +37,8 @@ func (f *JSONFormatter) Format(entry *LogEntry) ([]byte, error) {
 
 	return json.Marshal(data)
 }
+
+// === Text Formatter ===
 
 type TextFormatter struct {
 	UseColors bool
@@ -45,21 +51,19 @@ func (f *TextFormatter) Format(entry *LogEntry) ([]byte, error) {
 	if f.UseColors {
 		switch entry.Level {
 		case DebugLevel:
-			color = "\033[36m"
+			color = "\033[36m" // Cyan
 		case InfoLevel:
-			color = "\033[32m"
+			color = "\033[32m" // Green
 		case WarnLevel:
-			color = "\033[33m"
+			color = "\033[33m" // Yellow
 		case ErrorLevel, FatalLevel:
-			color = "\033[31m"
+			color = "\033[31m" // Red
 		}
 	}
 
-	// Format: [ZAMAN] [LEVEL] Mesaj {field1=value1 field2=value2}
 	timestamp := entry.Time.Format("2006-01-02 15:04:05")
 	levelStr := entry.Level.String()
 
-	// Fields kısmını string'e çevirme
 	fieldsStr := ""
 	if len(entry.Fields) > 0 {
 		var sb strings.Builder
@@ -69,9 +73,10 @@ func (f *TextFormatter) Format(entry *LogEntry) ([]byte, error) {
 		fieldsStr = fmt.Sprintf("\tFields: {%s}", strings.TrimSpace(sb.String()))
 	}
 
-	// Sonuç stringini oluştur
-	logLine := fmt.Sprintf("%s[%s] [%s]%s %s%s\n",
-		color, timestamp, levelStr, resetColor, entry.Message, fieldsStr)
+	// YENİ FORMAT: [ZAMAN] [LEVEL] (DOSYA:SATIR) MESAJ
+	// Caller bilgisini level'dan hemen sonraya ekledik.
+	logLine := fmt.Sprintf("%s[%s] [%s] (%s)%s %s%s\n",
+		color, timestamp, levelStr, entry.Caller, resetColor, entry.Message, fieldsStr)
 
 	return []byte(logLine), nil
 }
