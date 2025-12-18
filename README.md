@@ -102,17 +102,20 @@ func main() {
 
 ## 🏗️ Mimari ve Tasarım Desenleri
 Bu proje geliştirilirken aşağıdaki yazılım prensipleri ve tasarım desenleri kullanılmıştır:
-Strategy Pattern: JSONFormatter ve TextFormatter değişimleri için.
-Factory Pattern: NewFromConfig ile nesne oluşturma karmaşıklığını gizlemek için.
-Worker Pool Pattern: Logları asenkron işlemek için Goroutine ve Channel yapısı.
-Dependency Injection: io.Writer soyutlaması ile test edilebilir yapı.
+
+* Strategy Pattern: JSONFormatter ve TextFormatter değişimleri için.
+* Factory Pattern: NewFromConfig ile nesne oluşturma karmaşıklığını gizlemek için.
+* Worker Pool Pattern: Logları asenkron işlemek için Goroutine ve Channel yapısı.
+* Dependency Injection: io.Writer soyutlaması ile test edilebilir yapı.
 
 ## 🛠️ Yapılandırma (Config)
-Alan	Tip	Açıklama
-Level	string	Log seviyesi (DEBUG, INFO, WARN, ERROR, FATAL)
-Format	FormatType	Çıktı formatı (logger.FormatJSON veya logger.FormatText)
-FilePath	string	Log dosyasının yolu (örn: app.log)
-UseConsole	bool	Loglar konsola basılsın mı?
-UseFile	bool	Loglar dosyaya kaydedilsin mi?
-UseColors	bool	Text formatında renkli çıktı olsun mu?
+
+| Alan | Tip | Açıklama |
+| :--- | :--- | :--- |
+| `Level` | `string` | Log seviyesi (`DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`) |
+| `Format` | `FormatType` | Çıktı formatı (`logger.FormatJSON` veya `logger.FormatText`) |
+| `FilePath` | `string` | Log dosyasının yolu (örn: `app.log`) |
+| `UseConsole` | `bool` | Loglar konsola basılsın mı? |
+| `UseFile` | `bool` | Loglar dosyaya kaydedilsin mi? |
+| `UseColors` | `bool` | Text formatında renkli çıktı olsun mu? |
 
