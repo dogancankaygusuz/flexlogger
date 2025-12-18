@@ -1,6 +1,6 @@
 # FlexLogger 🚀
 
-**FlexLogger**, Go uygulamaları için geliştirilmiş; yüksek performanslı, thread-safe, yapılandırılabilir ve üretim ortamına (production) uygun bir loglama kütüphanesidir.
+**FlexLogger**, Go uygulamaları için geliştirilmiş; yüksek performanslı, thread-safe, yapılandırılabilir ve üretim ortamına uygun bir loglama kütüphanesidir.
 
 Standart `log` paketinin ötesine geçerek, **Asenkron Yazma (Async)**, **Dosya Döndürme (Log Rotation)** ve **Context Takibi (Tracing)** gibi kurumsal özellikleri barındırır.
 
@@ -100,13 +100,14 @@ func main() {
 }
 ```
 
-🏗️ Mimari ve Tasarım Desenleri
+## 🏗️ Mimari ve Tasarım Desenleri
 Bu proje geliştirilirken aşağıdaki yazılım prensipleri ve tasarım desenleri kullanılmıştır:
 Strategy Pattern: JSONFormatter ve TextFormatter değişimleri için.
 Factory Pattern: NewFromConfig ile nesne oluşturma karmaşıklığını gizlemek için.
 Worker Pool Pattern: Logları asenkron işlemek için Goroutine ve Channel yapısı.
 Dependency Injection: io.Writer soyutlaması ile test edilebilir yapı.
-🛠️ Yapılandırma (Config)
+
+## 🛠️ Yapılandırma (Config)
 Alan	Tip	Açıklama
 Level	string	Log seviyesi (DEBUG, INFO, WARN, ERROR, FATAL)
 Format	FormatType	Çıktı formatı (logger.FormatJSON veya logger.FormatText)
@@ -114,57 +115,4 @@ FilePath	string	Log dosyasının yolu (örn: app.log)
 UseConsole	bool	Loglar konsola basılsın mı?
 UseFile	bool	Loglar dosyaya kaydedilsin mi?
 UseColors	bool	Text formatında renkli çıktı olsun mu?
-2. İleri Seviye Kullanım (Production)
-JSON formatı, dosya yazdırma, log rotation ve context takibi:
-code
-Go
-package main
 
-import (
-	"context"
-	"github.com/dogancankaygusuz/flexlogger/pkg/logger"
-)
-
-func main() {
-	// Production Ayarları
-	cfg := logger.Config{
-		Level:      "INFO",
-		Format:     logger.FormatJSON,
-		FilePath:   "logs/app.log",
-		UseFile:    true,  // Dosyaya yaz
-		UseConsole: false, // Konsolu kapat
-	}
-
-	log, _ := logger.NewFromConfig(cfg)
-	defer log.Close()
-
-	// Context Simülasyonu (Request ID takibi)
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, "request_id", "req-xyz-123")
-
-	// Structured Logging
-	log.Info(ctx, "Sipariş alındı", map[string]interface{}{
-		"user_id": 101,
-		"amount":  59.90,
-		"currency": "USD",
-	})
-	
-	// Hata Logu (Otomatik dosya ve satır bilgisi eklenir)
-	log.Error(ctx, "Ödeme başarısız", map[string]interface{}{
-		"error_code": 5001,
-	})
-}
-🏗️ Mimari ve Tasarım Desenleri
-Bu proje geliştirilirken aşağıdaki yazılım prensipleri ve tasarım desenleri kullanılmıştır:
-Strategy Pattern: JSONFormatter ve TextFormatter değişimleri için.
-Factory Pattern: NewFromConfig ile nesne oluşturma karmaşıklığını gizlemek için.
-Worker Pool Pattern: Logları asenkron işlemek için Goroutine ve Channel yapısı.
-Dependency Injection: io.Writer soyutlaması ile test edilebilir yapı.
-🛠️ Yapılandırma (Config)
-Alan	Tip	Açıklama
-Level	string	Log seviyesi (DEBUG, INFO, WARN, ERROR, FATAL)
-Format	FormatType	Çıktı formatı (logger.FormatJSON veya logger.FormatText)
-FilePath	string	Log dosyasının yolu (örn: app.log)
-UseConsole	bool	Loglar konsola basılsın mı?
-UseFile	bool	Loglar dosyaya kaydedilsin mi?
-UseColors	bool	Text formatında renkli çıktı olsun mu?
