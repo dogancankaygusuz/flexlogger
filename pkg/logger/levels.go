@@ -2,13 +2,9 @@ package logger
 
 import "strings"
 
-// Level, log seviyesini temsil eden özel bir tiptir.
-// int tabanlıdır çünkü seviyeleri karşılaştırmak isteyeceğiz (örn: level > InfoLevel)
 type Level int
 
 const (
-	// iota ile otomatik artan değerler atıyoruz.
-	// DebugLevel = 0, InfoLevel = 1, WarnLevel = 2 ...
 	DebugLevel Level = iota
 	InfoLevel
 	WarnLevel
@@ -17,7 +13,6 @@ const (
 )
 
 // String metodu, Level tipini okunabilir metne çevirir.
-// fmt.Stringer interface'ini implemente etmiş oluruz.
 func (l Level) String() string {
 	switch l {
 	case DebugLevel:
@@ -35,8 +30,7 @@ func (l Level) String() string {
 	}
 }
 
-// ParseLevel, dışarıdan (config'den) gelen string'i Level tipine çevirir.
-// "info" -> InfoLevel döner.
+// Config'den gelen string'i Level tipine çevirir.
 func ParseLevel(levelStr string) Level {
 	switch strings.ToUpper(levelStr) {
 	case "DEBUG":
@@ -50,6 +44,6 @@ func ParseLevel(levelStr string) Level {
 	case "FATAL":
 		return FatalLevel
 	default:
-		return InfoLevel // Varsayılan olarak INFO olsun
+		return InfoLevel
 	}
 }

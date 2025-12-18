@@ -8,22 +8,14 @@ import (
 )
 
 func TestLoggerOutput(t *testing.T) {
-	// Test için sanal bir buffer (Output) kullanacağız
 	var buf bytes.Buffer
 
-	// Logger oluştur
 	logger := New(InfoLevel, &buf, &JSONFormatter{})
-
-	// Log yaz
 	logger.Info(context.Background(), "test message", nil)
-
-	// Async olduğu için worker'ın yazmasını çok az beklemek gerekebilir
-	// Ama test ortamında Close() çağırırsak flush eder.
 	logger.Close()
 
 	output := buf.String()
 
-	// Kontroller
 	if !strings.Contains(output, "test message") {
 		t.Errorf("Log mesajı bulunamadı. Çıktı: %s", output)
 	}
@@ -34,9 +26,8 @@ func TestLoggerOutput(t *testing.T) {
 
 func TestLogLevelFilter(t *testing.T) {
 	var buf bytes.Buffer
-	logger := New(InfoLevel, &buf, &TextFormatter{}) // Threshold INFO
+	logger := New(InfoLevel, &buf, &TextFormatter{})
 
-	// DEBUG mesajı yaz (Yazılmamalı)
 	logger.Debug(context.Background(), "gizli mesaj", nil)
 	logger.Close()
 
