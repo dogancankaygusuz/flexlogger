@@ -1,4 +1,4 @@
-# FlexLogger 🚀
+# FlexLogger
 
 **FlexLogger**, Go uygulamaları için geliştirilmiş; yüksek performanslı, thread-safe, yapılandırılabilir ve üretim ortamına uygun bir loglama kütüphanesidir.
 
