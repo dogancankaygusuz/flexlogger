@@ -17,15 +17,13 @@ Standart `log` paketinin ötesine geçerek, **Asenkron Yazma (Async)**, **Dosya 
 
 ---
 
-## 📦 Kurulum
+## Kurulum
 
 ```bash
 go get github.com/dogancankaygusuz/flexlogger
 ```
 
-## 🚀 Kullanım
-
-### 1. Basit Kullanım (Development)
+## Kullanım
 
 Geliştirme ortamında renkli konsol çıktısı için:
 
@@ -54,7 +52,6 @@ func main() {
 	log.Debug(context.Background(), "Bu bir debug mesajıdır", nil)
 }
 ```
-### 2. İleri Seviye Kullanım (Production)
 
 JSON formatı, dosya yazdırma, log rotation ve context takibi:
 
@@ -97,7 +94,7 @@ func main() {
 }
 ```
 
-## 🏗️ Mimari ve Tasarım Desenleri
+##  Mimari ve Tasarım Desenleri
 Bu proje geliştirilirken aşağıdaki yazılım prensipleri ve tasarım desenleri kullanılmıştır:
 
 * Strategy Pattern: JSONFormatter ve TextFormatter değişimleri için.
