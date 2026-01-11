@@ -6,17 +6,14 @@ Standart `log` paketinin ötesine geçerek, **Asenkron Yazma (Async)**, **Dosya 
 
 ---
 
-## 🌟 Özellikler
+## Özellikler
 
-*   ⚡ **Asenkron & Non-Blocking:** `Channels` ve `Goroutines` kullanarak loglama işlemini arka planda yapar, ana akışı (latency) etkilemez.
-*   🔄 **Otomatik Log Rotation:** Log dosyaları belirlenen boyuta (örn: 10MB) ulaştığında otomatik olarak yedeklenir (`app.log` -> `app-TIMESTAMP.backup`).
-*   🔍 **Context Aware (Tracing):** `context.Context` desteği ile `request_id` veya `trace_id` gibi değerleri otomatik loglar.
-*   🎨 **Çoklu Format Desteği:** 
-*   **JSON Formatter:** Log toplama araçları (ELK Stack, Splunk) için.
-*   **Text Formatter:** Geliştirme ortamı için renkli ve okunabilir çıktı.
-*   🛡️ **Thread-Safe:** `sync.Mutex` ve `Worker Pattern` ile yüksek eşzamanlılık (concurrency) altında güvenle çalışır.
-*   📍 **Caller Information:** Hatanın hangi dosya ve satırda olduğunu otomatik yakalar (örn: `main.go:42`).
-*   📝 **Multi-Writer:** Logları aynı anda hem Dosyaya hem de Konsola yazabilir.
+*   **Asenkron & Non-Blocking:** `Channels` ve `Goroutines` kullanarak loglama işlemini arka planda yapar, ana akışı etkilemez.
+*   **Otomatik Log Rotation:** Log dosyaları belirlenen boyuta (10MB) ulaştığında otomatik olarak yedeklenir (`app.log` -> `app-TIMESTAMP.backup`).
+*   **Context Aware (Tracing):** `context.Context` desteği ile `request_id` veya `trace_id` gibi değerleri otomatik loglar.
+*   **Thread-Safe:** `sync.Mutex` ve `Worker Pattern` ile yüksek eşzamanlılık (concurrency) altında güvenle çalışır.
+*   **Caller Information:** Hatanın hangi dosya ve satırda olduğunu otomatik yakalar.
+*   **Multi-Writer:** Logları aynı anda hem Dosyaya hem de Konsola yazabilir.
 
 ---
 
